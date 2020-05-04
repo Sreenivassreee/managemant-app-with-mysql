@@ -22,13 +22,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<List<Model>> people;
+  List<Model> model;
   String selected;
-  TextEditingController firstName = TextEditingController();
-  TextEditingController lastName = TextEditingController();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
 
   @override
   void initState() {
+    _Data();
     super.initState();
   }
 
@@ -43,12 +44,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _Data() {
-    people = Services.Data();
-    print(people);
+    Services.Data().then((people) {
+      setState(() {
+        print("people$people");
+        model = people;
+      });
+      print(model[2].firstName);
+    });
   }
 
   _Add() {
-    Services.add(firstName.text, lastName.text).then((value) {
+    Services.add(firstNameController.text, lastNameController.text)
+        .then((value) {
+      if (value == '    Sucess') {
+        print("SucessFully Added");
+        _Data();
+      } else if (value == '    Failed') {
+        print("Failed  To Added");
+      }
+    });
+  }
+
+  _Update(id) {
+    Services.updage(id, firstNameController.text, lastNameController.text)
+        .then((value) {
       if (value == '    Sucess') {
         print("SucessFully Added");
       } else if (value == '    Failed') {
@@ -57,18 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  _Update() {
-    Services.updage(selected, firstName.text, lastName.text).then((value) {
-      if (value == '    Sucess') {
-        print("SucessFully Added");
-      } else if (value == '    Failed') {
-        print("Failed  To Added");
-      }
-    });
-  }
-
-  _Delete() {
+  _Delete(selected) {
     Services.delete(selected).then((value) {
+      _Data();
       if (value == '    Sucess') {
         print("SucessFully Deleted");
       } else if (value == '    Failed') {
@@ -78,19 +88,39 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _clearText() {
-    firstName.text = "";
-    lastName.text = "";
+    firstNameController.text = "";
+    lastNameController.text = "";
+  }
+
+  showText(Model e) {
+    setState(() {
+      firstNameController.text = e.firstName;
+      lastNameController.text = e.lastName;
+    });
+    ;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _Add();
-          _clearText();
-        },
-      ),
+      floatingActionButton:
+          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+        FloatingActionButton(
+          child: Icon(Icons.arrow_upward),
+          onPressed: () {
+            _Update(selected);
+            _clearText();
+            _Data();
+          },
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            _Add();
+            _clearText();
+          },
+        ),
+      ]),
       appBar: AppBar(
         title: Text("Information About Employees"),
         actions: [
@@ -98,19 +128,74 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(icon: Icon(Icons.add), onPressed: _create),
         ],
       ),
-      body: Container(
-        child: Column(
-          children: [
-            TextField(
-              controller: firstName,
-              decoration: InputDecoration(labelText: "FirstName"),
+      body: Column(
+        children: [
+          Container(
+            child: Column(
+              children: [
+                TextField(
+                  controller: firstNameController,
+                  decoration: InputDecoration(labelText: "FirstName"),
+                ),
+                TextField(
+                  controller: lastNameController,
+                  decoration: InputDecoration(labelText: "LastName"),
+                ),
+              ],
             ),
-            TextField(
-              controller: lastName,
-              decoration: InputDecoration(labelText: "LastName"),
+          ),
+          Flexible(
+            child: DataTable(
+              columns: [
+                DataColumn(label: Text('ID')),
+                DataColumn(label: Text('FirstName')),
+                DataColumn(label: Text('LastClass')),
+                DataColumn(label: Text('Delete')),
+              ],
+              rows: model
+                  .map(
+                    (e) => DataRow(cells: [
+                      DataCell(
+                        Text(
+                          e.id,
+                        ),
+                        onTap: () {
+                          selected = e.id;
+                          showText(e);
+                        },
+                      ),
+                      DataCell(
+                        Text(
+                          e.firstName,
+                        ),
+                        onTap: () {
+                          selected = e.id;
+                          showText(e);
+                        },
+                      ),
+                      DataCell(
+                        Text(
+                          e.lastName,
+                        ),
+                        onTap: () {
+                          selected = e.id;
+                          showText(e);
+                        },
+                      ),
+                      DataCell(
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            _Delete(e.id);
+                          },
+                        ),
+                      ),
+                    ]),
+                  )
+                  .toList(),
             ),
-          ],
-        ),
+          )
+        ],
       ),
     );
   }

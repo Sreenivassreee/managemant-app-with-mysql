@@ -8,8 +8,8 @@ class Model {
   factory Model.fromJson(Map<String, dynamic> json) {
     return Model(
       id: json['id'] as String,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
+      firstName: json['first_name'] as String,
+      lastName: json['last_name'] as String,
     );
   }
 }

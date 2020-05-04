@@ -13,6 +13,7 @@ class Services {
 
   static List<Model> parseData(String parsedData) {
     final data = jsonDecode(parsedData).cast<Map<String, dynamic>>();
+    print(data.map<Model>((json) => Model.fromJson(json)).toList());
     return data.map<Model>((json) => Model.fromJson(json)).toList();
   }
 
@@ -21,8 +22,10 @@ class Services {
       var map = Map<String, dynamic>();
       map['action'] = GET_ACTION;
       final responce = await http.post(ROOT, body: map);
+
       if (200 == responce.statusCode) {
         List<Model> list = parseData(responce.body);
+        print(list);
         return list;
       } else {
         return List<Model>();
@@ -97,6 +100,7 @@ class Services {
     try {
       var map = Map<String, dynamic>();
       map['action'] = DELETE_ACTION;
+      map['emp_id'] = emp_id;
 
       var res = await http.post(ROOT, body: map);
       print("Delete Responce : ${res.body}");
